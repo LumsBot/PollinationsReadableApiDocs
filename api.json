@@ -6,8 +6,8 @@
     }
   ],
   "info": {
-    "title": "Pollinations.AI API",
-    "description": "Documentation for `gen.pollinations.ai` - the Pollinations.AI API gateway.\n\n[📝 Edit docs](https://github.com/pollinations/pollinations/edit/master/enter.pollinations.ai/src/routes/docs.ts)\n\n## Quick Start\n\nGet your API key at https://enter.pollinations.ai\n\n### Image Generation\n```bash\ncurl 'https://gen.pollinations.ai/image/a%20cat?model=flux' \\\n  -H 'Authorization: Bearer YOUR_API_KEY'\n```\n\n### Text Generation\n```bash\ncurl 'https://gen.pollinations.ai/v1/chat/completions' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]}'\n```\n\n### Simple Text Endpoint\n```bash\ncurl 'https://gen.pollinations.ai/text/hello?key=YOUR_API_KEY'\n```\n\n### Streaming\n```bash\ncurl 'https://gen.pollinations.ai/v1/chat/completions' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Write a poem\"}], \"stream\": true}' \\\n  --no-buffer\n```\n\n### Model Discovery\n**Always check available models before testing:**\n\n- **Image models:** [/image/models](https://gen.pollinations.ai/image/models)\n- **Text models:** [/v1/models](https://gen.pollinations.ai/v1/models)\n\n## Authentication\n\n**Two key types:**\n- **Publishable Keys (`pk_`):** Client-side safe, IP rate-limited (3 req/burst, 1/15sec refill)\n- **Secret Keys (`sk_`):** Server-side only, no rate limits, can spend Pollen\n\n**Auth methods:**\n1. Header: `Authorization: Bearer YOUR_API_KEY`\n2. Query param: `?key=YOUR_API_KEY`",
+    "title": "pollinations.ai API",
+    "description": "Documentation for `gen.pollinations.ai` - the pollinations.ai API gateway.\n\n[📝 Edit docs](https://github.com/pollinations/pollinations/edit/master/enter.pollinations.ai/src/routes/docs.ts)\n\n## Quick Start\n\nGet your API key at https://enter.pollinations.ai\n\n### Image Generation\n```bash\ncurl 'https://gen.pollinations.ai/image/a%20cat?model=flux' \\\n  -H 'Authorization: Bearer YOUR_API_KEY'\n```\n\n### Text Generation\n```bash\ncurl 'https://gen.pollinations.ai/v1/chat/completions' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]}'\n```\n\n### Vision (Image Input)\n```bash\ncurl 'https://gen.pollinations.ai/v1/chat/completions' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": [{\"type\": \"text\", \"text\": \"Describe this image\"}, {\"type\": \"image_url\", \"image_url\": {\"url\": \"https://example.com/image.jpg\"}}]}]}'\n```\n\n**Note:** `gemini` model has `code_execution`, `google_search`, `url_context` tools enabled by default. Pass your own `tools` array to override.\n\n### Simple Text Endpoint\n```bash\ncurl 'https://gen.pollinations.ai/text/hello?key=YOUR_API_KEY'\n```\n\n### Streaming\n```bash\ncurl 'https://gen.pollinations.ai/v1/chat/completions' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Write a poem\"}], \"stream\": true}' \\\n  --no-buffer\n```\n\n### Model Discovery\n**Always check available models before testing:**\n\n- **Image models:** [/image/models](https://gen.pollinations.ai/image/models)\n- **Text models:** [/v1/models](https://gen.pollinations.ai/v1/models)\n\n## Authentication\n\n**Two key types:**\n- **Publishable Keys (`pk_`):** Client-side safe, IP rate-limited (1 pollen/hour per IP+key)\n- **Secret Keys (`sk_`):** Server-side only, no rate limits, can spend Pollen\n\n**Auth methods:**\n1. Header: `Authorization: Bearer YOUR_API_KEY`\n2. Query param: `?key=YOUR_API_KEY`",
     "version": "0.3.0"
   },
   "components": {
@@ -17,6 +17,439 @@
         "scheme": "bearer",
         "bearerFormat": "API Key",
         "description": "API key from enter.pollinations.ai dashboard"
+      }
+    },
+    "schemas": {
+      "ErrorDetails": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CacheControl": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ephemeral"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ContentFilterSeverity": {
+        "type": "string",
+        "enum": [
+          "safe",
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "ContentFilterResult": {
+        "type": "object",
+        "properties": {
+          "hate": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "self_harm": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "sexual": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "violence": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "jailbreak": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          },
+          "protected_material_text": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          },
+          "protected_material_code": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          }
+        }
+      },
+      "CompletionUsage": {
+        "type": "object",
+        "properties": {
+          "completion_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "completion_tokens_details": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "accepted_prediction_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "audio_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "reasoning_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "rejected_prediction_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "prompt_tokens_details": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "audio_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "cached_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "completion_tokens",
+          "prompt_tokens",
+          "total_tokens"
+        ]
+      },
+      "ValidationErrorDetails": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          },
+          "formErrors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fieldErrors": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "name",
+          "formErrors",
+          "fieldErrors"
+        ]
+      },
+      "MessageContentPart": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              },
+              "cache_control": {
+                "$ref": "#/components/schemas/CacheControl"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "image_url"
+              },
+              "image_url": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "low",
+                      "high"
+                    ]
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "image_url"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "video_url"
+              },
+              "video_url": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "video_url"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "input_audio"
+              },
+              "input_audio": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "wav",
+                      "mp3",
+                      "flac",
+                      "opus",
+                      "pcm16"
+                    ]
+                  }
+                },
+                "required": [
+                  "data",
+                  "format"
+                ]
+              },
+              "cache_control": {
+                "$ref": "#/components/schemas/CacheControl"
+              }
+            },
+            "required": [
+              "type",
+              "input_audio"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "file"
+              },
+              "file": {
+                "type": "object",
+                "properties": {
+                  "file_data": {
+                    "type": "string"
+                  },
+                  "file_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "file_url": {
+                    "type": "string"
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  }
+                }
+              },
+              "cache_control": {
+                "$ref": "#/components/schemas/CacheControl"
+              }
+            },
+            "required": [
+              "type",
+              "file"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": {}
+          }
+        ]
       }
     }
   },
@@ -34,115 +467,62 @@
   "paths": {
     "/polar/customer/state": {},
     "/polar/customer/events": {},
+    "/polar/customer/pending-spend": {},
+    "/polar/customer/d1-balance": {},
     "/polar/customer/portal": {},
     "/polar/checkout/{slug}": {},
     "/tiers/view": {},
-    "/tiers/activate": {},
+    "/api-keys/{id}/update": {},
+    "/usage": {},
     "/v1/models": {
       "get": {
         "operationId": "getGenerateV1Models",
         "tags": [
           "gen.pollinations.ai"
         ],
-        "description": "Get available text models (OpenAI-compatible).",
+        "description": "Get available text models (OpenAI-compatible). If an API key with model restrictions is provided, only allowed models are returned.",
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "Array of model descriptions for each available model.",
-                  "type": "array",
-                  "items": {
-                    "description": "Model description and capabilities",
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "tier": {
-                        "type": "string",
-                        "enum": [
-                          "anonymous",
-                          "seed",
-                          "flower",
-                          "nectar"
-                        ]
-                      },
-                      "community": {
-                        "type": "boolean"
-                      },
-                      "aliases": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "input_modalities": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "text",
-                            "image",
-                            "audio"
-                          ]
-                        }
-                      },
-                      "output_modalities": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "text",
-                            "image",
-                            "audio"
-                          ]
-                        }
-                      },
-                      "tools": {
-                        "type": "boolean"
-                      },
-                      "vision": {
-                        "type": "boolean"
-                      },
-                      "audio": {
-                        "type": "boolean"
-                      },
-                      "maxInputChars": {
-                        "type": "number"
-                      },
-                      "reasoning": {
-                        "type": "boolean"
-                      },
-                      "voices": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "uncensored": {
-                        "type": "boolean"
-                      },
-                      "supportsSystemMessages": {
-                        "type": "boolean"
-                      }
+                  "description": "OpenAI-compatible list of available models.",
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "const": "list"
                     },
-                    "required": [
-                      "name",
-                      "description",
-                      "tier",
-                      "community",
-                      "input_modalities",
-                      "output_modalities",
-                      "tools",
-                      "vision",
-                      "audio"
-                    ]
-                  }
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "description": "OpenAI-compatible model object",
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "object": {
+                            "type": "string",
+                            "const": "model"
+                          },
+                          "created": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "object",
+                          "created"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data"
+                  ]
                 }
               }
             }
@@ -184,18 +564,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -228,7 +597,7 @@
         "tags": [
           "gen.pollinations.ai"
         ],
-        "description": "Get a list of available image generation models with pricing, capabilities, and metadata. Use this endpoint to discover which models are available and their costs before making generation requests. Response includes `aliases` (alternative names you can use), pricing per image, and supported modalities.",
+        "description": "Get a list of available image generation models with pricing, capabilities, and metadata. If an API key with model restrictions is provided, only allowed models are returned.",
         "responses": {
           "200": {
             "description": "Success",
@@ -250,33 +619,36 @@
                         }
                       },
                       "pricing": {
-                        "type": "object",
-                        "properties": {
-                          "input_token_price": {
-                            "type": "number"
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "pollen"
+                                }
+                              ]
+                            }
                           },
-                          "output_token_price": {
-                            "type": "number"
-                          },
-                          "cached_token_price": {
-                            "type": "number"
-                          },
-                          "image_price": {
-                            "type": "number"
-                          },
-                          "audio_input_price": {
-                            "type": "number"
-                          },
-                          "audio_output_price": {
-                            "type": "number"
-                          },
-                          "currency": {
-                            "type": "string",
-                            "const": "pollen"
+                          {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string",
+                                "const": "pollen"
+                              }
+                            },
+                            "required": [
+                              "currency"
+                            ]
                           }
-                        },
-                        "required": [
-                          "currency"
                         ]
                       },
                       "description": {
@@ -360,18 +732,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -404,7 +765,7 @@
         "tags": [
           "gen.pollinations.ai"
         ],
-        "description": "Get a list of available text generation models with pricing, capabilities, and metadata. Use this endpoint to discover which models are available and their costs before making generation requests. Response includes `aliases` (alternative names you can use), token pricing, supported modalities (text, image, audio), and capabilities (tools, reasoning).",
+        "description": "Get a list of available text generation models with pricing, capabilities, and metadata. If an API key with model restrictions is provided, only allowed models are returned.",
         "responses": {
           "200": {
             "description": "Success",
@@ -426,33 +787,36 @@
                         }
                       },
                       "pricing": {
-                        "type": "object",
-                        "properties": {
-                          "input_token_price": {
-                            "type": "number"
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "pollen"
+                                }
+                              ]
+                            }
                           },
-                          "output_token_price": {
-                            "type": "number"
-                          },
-                          "cached_token_price": {
-                            "type": "number"
-                          },
-                          "image_price": {
-                            "type": "number"
-                          },
-                          "audio_input_price": {
-                            "type": "number"
-                          },
-                          "audio_output_price": {
-                            "type": "number"
-                          },
-                          "currency": {
-                            "type": "string",
-                            "const": "pollen"
+                          {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string",
+                                "const": "pollen"
+                              }
+                            },
+                            "required": [
+                              "currency"
+                            ]
                           }
-                        },
-                        "required": [
-                          "currency"
                         ]
                       },
                       "description": {
@@ -536,18 +900,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -710,18 +1063,7 @@
                                               "type": "string"
                                             },
                                             "cache_control": {
-                                              "type": "object",
-                                              "properties": {
-                                                "type": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "ephemeral"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "type"
-                                              ]
+                                              "$ref": "#/components/schemas/CacheControl"
                                             }
                                           },
                                           "required": [
@@ -915,138 +1257,7 @@
                           "content_filter_results": {
                             "anyOf": [
                               {
-                                "type": "object",
-                                "properties": {
-                                  "hate": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "self_harm": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "sexual": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "violence": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "jailbreak": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  },
-                                  "protected_material_text": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  },
-                                  "protected_material_code": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  }
-                                }
+                                "$ref": "#/components/schemas/ContentFilterResult"
                               },
                               {
                                 "type": "null"
@@ -1069,138 +1280,7 @@
                                 "maximum": 9007199254740991
                               },
                               "content_filter_results": {
-                                "type": "object",
-                                "properties": {
-                                  "hate": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "self_harm": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "sexual": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "violence": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "severity": {
-                                        "type": "string",
-                                        "enum": [
-                                          "safe",
-                                          "low",
-                                          "medium",
-                                          "high"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "severity"
-                                    ]
-                                  },
-                                  "jailbreak": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  },
-                                  "protected_material_text": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  },
-                                  "protected_material_code": {
-                                    "type": "object",
-                                    "properties": {
-                                      "filtered": {
-                                        "type": "boolean"
-                                      },
-                                      "detected": {
-                                        "type": "boolean"
-                                      }
-                                    },
-                                    "required": [
-                                      "filtered",
-                                      "detected"
-                                    ]
-                                  }
-                                }
+                                "$ref": "#/components/schemas/ContentFilterResult"
                               }
                             },
                             "required": [
@@ -1236,83 +1316,7 @@
                       "const": "chat.completion"
                     },
                     "usage": {
-                      "type": "object",
-                      "properties": {
-                        "completion_tokens": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "completion_tokens_details": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "accepted_prediction_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                },
-                                "audio_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                },
-                                "reasoning_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                },
-                                "rejected_prediction_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                }
-                              }
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "prompt_tokens": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "prompt_tokens_details": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "audio_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                },
-                                "cached_tokens": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                }
-                              }
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "total_tokens": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        }
-                      },
-                      "required": [
-                        "completion_tokens",
-                        "prompt_tokens",
-                        "total_tokens"
-                      ]
+                      "$ref": "#/components/schemas/CompletionUsage"
                     },
                     "user_tier": {
                       "type": "string",
@@ -1379,38 +1383,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            },
-                            "formErrors": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "fieldErrors": {
-                              "type": "object",
-                              "propertyNames": {
-                                "type": "string"
-                              },
-                              "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "required": [
-                            "name",
-                            "formErrors",
-                            "fieldErrors"
-                          ]
+                          "$ref": "#/components/schemas/ValidationErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -1471,18 +1444,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -1543,18 +1505,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -1601,178 +1552,7 @@
                                   "minItems": 1,
                                   "type": "array",
                                   "items": {
-                                    "anyOf": [
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "text"
-                                          },
-                                          "text": {
-                                            "type": "string"
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "text"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "image_url"
-                                          },
-                                          "image_url": {
-                                            "type": "object",
-                                            "properties": {
-                                              "url": {
-                                                "type": "string"
-                                              },
-                                              "detail": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "auto",
-                                                  "low",
-                                                  "high"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "url"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "image_url"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "input_audio"
-                                          },
-                                          "input_audio": {
-                                            "type": "object",
-                                            "properties": {
-                                              "data": {
-                                                "type": "string"
-                                              },
-                                              "format": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "wav",
-                                                  "mp3",
-                                                  "flac",
-                                                  "opus",
-                                                  "pcm16"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "data",
-                                              "format"
-                                            ]
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "input_audio"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "file"
-                                          },
-                                          "file": {
-                                            "type": "object",
-                                            "properties": {
-                                              "file_data": {
-                                                "type": "string"
-                                              },
-                                              "file_id": {
-                                                "type": "string"
-                                              },
-                                              "file_name": {
-                                                "type": "string"
-                                              },
-                                              "file_url": {
-                                                "type": "string"
-                                              },
-                                              "mime_type": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "file"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "type"
-                                        ],
-                                        "additionalProperties": {}
-                                      }
-                                    ]
+                                    "$ref": "#/components/schemas/MessageContentPart"
                                   }
                                 }
                               ]
@@ -1785,18 +1565,7 @@
                               "type": "string"
                             },
                             "cache_control": {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "enum": [
-                                    "ephemeral"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "type"
-                              ]
+                              "$ref": "#/components/schemas/CacheControl"
                             }
                           },
                           "required": [
@@ -1816,178 +1585,7 @@
                                   "minItems": 1,
                                   "type": "array",
                                   "items": {
-                                    "anyOf": [
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "text"
-                                          },
-                                          "text": {
-                                            "type": "string"
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "text"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "image_url"
-                                          },
-                                          "image_url": {
-                                            "type": "object",
-                                            "properties": {
-                                              "url": {
-                                                "type": "string"
-                                              },
-                                              "detail": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "auto",
-                                                  "low",
-                                                  "high"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "url"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "image_url"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "input_audio"
-                                          },
-                                          "input_audio": {
-                                            "type": "object",
-                                            "properties": {
-                                              "data": {
-                                                "type": "string"
-                                              },
-                                              "format": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "wav",
-                                                  "mp3",
-                                                  "flac",
-                                                  "opus",
-                                                  "pcm16"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "data",
-                                              "format"
-                                            ]
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "input_audio"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "file"
-                                          },
-                                          "file": {
-                                            "type": "object",
-                                            "properties": {
-                                              "file_data": {
-                                                "type": "string"
-                                              },
-                                              "file_id": {
-                                                "type": "string"
-                                              },
-                                              "file_name": {
-                                                "type": "string"
-                                              },
-                                              "file_url": {
-                                                "type": "string"
-                                              },
-                                              "mime_type": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "file"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "type"
-                                        ],
-                                        "additionalProperties": {}
-                                      }
-                                    ]
+                                    "$ref": "#/components/schemas/MessageContentPart"
                                   }
                                 }
                               ]
@@ -2000,18 +1598,7 @@
                               "type": "string"
                             },
                             "cache_control": {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "enum": [
-                                    "ephemeral"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "type"
-                              ]
+                              "$ref": "#/components/schemas/CacheControl"
                             }
                           },
                           "required": [
@@ -2031,178 +1618,7 @@
                                   "minItems": 1,
                                   "type": "array",
                                   "items": {
-                                    "anyOf": [
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "text"
-                                          },
-                                          "text": {
-                                            "type": "string"
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "text"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "image_url"
-                                          },
-                                          "image_url": {
-                                            "type": "object",
-                                            "properties": {
-                                              "url": {
-                                                "type": "string"
-                                              },
-                                              "detail": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "auto",
-                                                  "low",
-                                                  "high"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "url"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "image_url"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "input_audio"
-                                          },
-                                          "input_audio": {
-                                            "type": "object",
-                                            "properties": {
-                                              "data": {
-                                                "type": "string"
-                                              },
-                                              "format": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "wav",
-                                                  "mp3",
-                                                  "flac",
-                                                  "opus",
-                                                  "pcm16"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "data",
-                                              "format"
-                                            ]
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "input_audio"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string",
-                                            "const": "file"
-                                          },
-                                          "file": {
-                                            "type": "object",
-                                            "properties": {
-                                              "file_data": {
-                                                "type": "string"
-                                              },
-                                              "file_id": {
-                                                "type": "string"
-                                              },
-                                              "file_name": {
-                                                "type": "string"
-                                              },
-                                              "file_url": {
-                                                "type": "string"
-                                              },
-                                              "mime_type": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          },
-                                          "cache_control": {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "ephemeral"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "file"
-                                        ]
-                                      },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "type"
-                                        ],
-                                        "additionalProperties": {}
-                                      }
-                                    ]
+                                    "$ref": "#/components/schemas/MessageContentPart"
                                   }
                                 }
                               ]
@@ -2234,178 +1650,7 @@
                                       "minItems": 1,
                                       "type": "array",
                                       "items": {
-                                        "anyOf": [
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "text"
-                                              },
-                                              "text": {
-                                                "type": "string"
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "text"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "image_url"
-                                              },
-                                              "image_url": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "url": {
-                                                    "type": "string"
-                                                  },
-                                                  "detail": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "auto",
-                                                      "low",
-                                                      "high"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "url"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "image_url"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "input_audio"
-                                              },
-                                              "input_audio": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "data": {
-                                                    "type": "string"
-                                                  },
-                                                  "format": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "wav",
-                                                      "mp3",
-                                                      "flac",
-                                                      "opus",
-                                                      "pcm16"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "data",
-                                                  "format"
-                                                ]
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "input_audio"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "file"
-                                              },
-                                              "file": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "file_data": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_id": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_name": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_url": {
-                                                    "type": "string"
-                                                  },
-                                                  "mime_type": {
-                                                    "type": "string"
-                                                  }
-                                                }
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "file"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ],
-                                            "additionalProperties": {}
-                                          }
-                                        ]
+                                        "$ref": "#/components/schemas/MessageContentPart"
                                       }
                                     }
                                   ]
@@ -2480,18 +1725,7 @@
                               ]
                             },
                             "cache_control": {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "enum": [
-                                    "ephemeral"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "type"
-                              ]
+                              "$ref": "#/components/schemas/CacheControl"
                             }
                           },
                           "required": [
@@ -2516,178 +1750,7 @@
                                       "minItems": 1,
                                       "type": "array",
                                       "items": {
-                                        "anyOf": [
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "text"
-                                              },
-                                              "text": {
-                                                "type": "string"
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "text"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "image_url"
-                                              },
-                                              "image_url": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "url": {
-                                                    "type": "string"
-                                                  },
-                                                  "detail": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "auto",
-                                                      "low",
-                                                      "high"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "url"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "image_url"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "input_audio"
-                                              },
-                                              "input_audio": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "data": {
-                                                    "type": "string"
-                                                  },
-                                                  "format": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "wav",
-                                                      "mp3",
-                                                      "flac",
-                                                      "opus",
-                                                      "pcm16"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "data",
-                                                  "format"
-                                                ]
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "input_audio"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string",
-                                                "const": "file"
-                                              },
-                                              "file": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "file_data": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_id": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_name": {
-                                                    "type": "string"
-                                                  },
-                                                  "file_url": {
-                                                    "type": "string"
-                                                  },
-                                                  "mime_type": {
-                                                    "type": "string"
-                                                  }
-                                                }
-                                              },
-                                              "cache_control": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "ephemeral"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "type"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "type",
-                                              "file"
-                                            ]
-                                          },
-                                          {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "required": [
-                                              "type"
-                                            ],
-                                            "additionalProperties": {}
-                                          }
-                                        ]
+                                        "$ref": "#/components/schemas/MessageContentPart"
                                       }
                                     }
                                   ]
@@ -2701,18 +1764,7 @@
                               "type": "string"
                             },
                             "cache_control": {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "enum": [
-                                    "ephemeral"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "type"
-                              ]
+                              "$ref": "#/components/schemas/CacheControl"
                             }
                           },
                           "required": [
@@ -2776,7 +1828,14 @@
                           "fable",
                           "onyx",
                           "nova",
-                          "shimmer"
+                          "shimmer",
+                          "coral",
+                          "verse",
+                          "ballad",
+                          "ash",
+                          "sage",
+                          "amuch",
+                          "dan"
                         ]
                       },
                       "format": {
@@ -2801,6 +1860,18 @@
                       {
                         "type": "number",
                         "minimum": -2,
+                        "maximum": 2
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "repetition_penalty": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
                         "maximum": 2
                       },
                       {
@@ -2856,19 +1927,6 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "n": {
-                    "default": 1,
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 128
                       },
                       {
                         "type": "null"
@@ -2965,7 +2023,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 0,
+                        "minimum": -1,
                         "maximum": 9007199254740991
                       },
                       {
@@ -3049,9 +2107,12 @@
                   "reasoning_effort": {
                     "type": "string",
                     "enum": [
+                      "none",
+                      "minimal",
                       "low",
                       "medium",
-                      "high"
+                      "high",
+                      "xhigh"
                     ]
                   },
                   "thinking_budget": {
@@ -3088,48 +2149,71 @@
                   "tools": {
                     "type": "array",
                     "items": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "const": "function"
-                        },
-                        "function": {
+                      "anyOf": [
+                        {
                           "type": "object",
                           "properties": {
-                            "description": {
-                              "type": "string"
+                            "type": {
+                              "type": "string",
+                              "const": "function"
                             },
-                            "name": {
-                              "type": "string"
-                            },
-                            "parameters": {
+                            "function": {
                               "type": "object",
-                              "propertyNames": {
-                                "type": "string"
-                              },
-                              "additionalProperties": {}
-                            },
-                            "strict": {
-                              "default": false,
-                              "anyOf": [
-                                {
-                                  "type": "boolean"
+                              "properties": {
+                                "description": {
+                                  "type": "string"
                                 },
-                                {
-                                  "type": "null"
+                                "name": {
+                                  "type": "string"
+                                },
+                                "parameters": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "strict": {
+                                  "default": false,
+                                  "anyOf": [
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
                                 }
+                              },
+                              "required": [
+                                "name"
                               ]
                             }
                           },
                           "required": [
-                            "name"
+                            "type",
+                            "function"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "code_execution",
+                                "google_search",
+                                "google_maps",
+                                "url_context",
+                                "computer_use",
+                                "file_search"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type"
                           ]
                         }
-                      },
-                      "required": [
-                        "type",
-                        "function"
                       ]
                     }
                   },
@@ -3235,7 +2319,6 @@
         }
       }
     },
-    "/openai": {},
     "/text/{prompt}": {
       "get": {
         "operationId": "getGenerateText:prompt",
@@ -3250,6 +2333,189 @@
               "text/plain": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Something was wrong with the input data, check the details for more info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 400
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "BAD_REQUEST"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Something was wrong with the input data, check the details for more info."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ValidationErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "You need to authenticate by providing a session cookie or Authorization header (Bearer token).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 401
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "UNAUTHORIZED"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "You need to authenticate by providing a session cookie or Authorization header (Bearer token)."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Oh snap, something went wrong on our end. We're on it!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 500
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "INTERNAL_ERROR"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Oh snap, something went wrong on our end. We're on it!"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
                 }
               }
             }
@@ -3280,8 +2546,8 @@
                 "qwen-coder",
                 "mistral",
                 "openai-audio",
-                "openai-reasoning",
                 "gemini",
+                "gemini-fast",
                 "deepseek",
                 "grok",
                 "gemini-search",
@@ -3303,11 +2569,12 @@
             "in": "query",
             "name": "seed",
             "schema": {
+              "default": 0,
               "type": "integer",
-              "minimum": -9007199254740991,
+              "minimum": -1,
               "maximum": 9007199254740991
             },
-            "description": "Random seed for reproducible results"
+            "description": "Random seed for reproducible results. Use -1 for random."
           },
           {
             "in": "query",
@@ -3423,38 +2690,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            },
-                            "formErrors": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "fieldErrors": {
-                              "type": "object",
-                              "propertyNames": {
-                                "type": "string"
-                              },
-                              "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "required": [
-                            "name",
-                            "formErrors",
-                            "fieldErrors"
-                          ]
+                          "$ref": "#/components/schemas/ValidationErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -3515,18 +2751,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -3587,18 +2812,7 @@
                           "type": "string"
                         },
                         "details": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ]
+                          "$ref": "#/components/schemas/ErrorDetails"
                         },
                         "requestId": {
                           "type": "string"
@@ -3639,10 +2853,9 @@
             "in": "query",
             "name": "model",
             "schema": {
-              "default": "flux",
+              "default": "zimage",
               "type": "string",
               "enum": [
-                "flux",
                 "kontext",
                 "turbo",
                 "nanobanana",
@@ -3650,13 +2863,23 @@
                 "seedream",
                 "seedream-pro",
                 "gptimage",
+                "gptimage-large",
                 "zimage",
                 "veo",
                 "seedance",
-                "seedance-pro"
+                "seedance-pro",
+                "gpt-image",
+                "gpt-image-1-mini",
+                "gpt-image-1.5",
+                "gpt-image-large",
+                "z-image",
+                "z-image-turbo",
+                "flux",
+                "veo-3.1-fast",
+                "video"
               ]
             },
-            "description": "AI model. Image: flux, turbo, gptimage, kontext, seedream, seedream-pro, nanobanana. Video: veo, seedance, seedance-pro"
+            "description": "AI model. Image: zimage (or flux alias), turbo, gptimage, kontext, seedream, seedream-pro, nanobanana. Video: veo, seedance, seedance-pro"
           },
           {
             "in": "query",
@@ -3684,12 +2907,12 @@
             "in": "query",
             "name": "seed",
             "schema": {
-              "default": 42,
+              "default": 0,
               "type": "integer",
-              "minimum": 0,
+              "minimum": -1,
               "maximum": 1844674407370955
             },
-            "description": "Random seed for reproducible results"
+            "description": "Random seed for reproducible results. Use -1 for random."
           },
           {
             "in": "query",
@@ -3766,7 +2989,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Reference image URL(s) for image-to-image or video. Comma/pipe separated for multiple"
+            "description": "Reference image URL(s). Comma/pipe separated for multiple. For veo: image[0]=first frame, image[1]=last frame (interpolation)"
           },
           {
             "in": "query",
@@ -3815,13 +3038,5 @@
         ]
       }
     }
-  },
-  "x-tagGroups": [
-    {
-      "name": "API",
-      "tags": [
-        "gen.pollinations.ai"
-      ]
-    }
-  ]
+  }
 }
