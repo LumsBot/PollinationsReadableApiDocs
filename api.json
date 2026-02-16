@@ -3442,6 +3442,7 @@
                 "nova-fast",
                 "glm",
                 "minimax",
+                "qwen-safety",
                 "qwen-character"
               ]
             },
