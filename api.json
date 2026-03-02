@@ -20,6 +20,20 @@
       }
     },
     "schemas": {
+      "ErrorDetails": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "CacheControl": {
         "type": "object",
         "properties": {
@@ -32,6 +46,238 @@
         },
         "required": [
           "type"
+        ]
+      },
+      "ContentFilterSeverity": {
+        "type": "string",
+        "enum": [
+          "safe",
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "ContentFilterResult": {
+        "type": "object",
+        "properties": {
+          "hate": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "self_harm": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "sexual": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "violence": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "severity": {
+                "$ref": "#/components/schemas/ContentFilterSeverity"
+              }
+            },
+            "required": [
+              "filtered",
+              "severity"
+            ]
+          },
+          "jailbreak": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          },
+          "protected_material_text": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          },
+          "protected_material_code": {
+            "type": "object",
+            "properties": {
+              "filtered": {
+                "type": "boolean"
+              },
+              "detected": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "filtered",
+              "detected"
+            ]
+          }
+        }
+      },
+      "CompletionUsage": {
+        "type": "object",
+        "properties": {
+          "completion_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "completion_tokens_details": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "accepted_prediction_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "audio_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "reasoning_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "rejected_prediction_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "prompt_tokens_details": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "audio_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "cached_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "completion_tokens",
+          "prompt_tokens",
+          "total_tokens"
+        ]
+      },
+      "ValidationErrorDetails": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          },
+          "formErrors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fieldErrors": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "name",
+          "formErrors",
+          "fieldErrors"
         ]
       },
       "MessageContentPart": {
@@ -277,7 +523,7 @@
     },
     {
       "name": "🖼️ Image Generation",
-      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-pro, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, klein, klein-large, imagen-4, grok-imagine\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`"
+      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, klein, klein-large, imagen-4, grok-imagine\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`"
     },
     {
       "name": "🎬 Video Generation",
@@ -995,7 +1241,7 @@
           "🤖 Models"
         ],
         "summary": "List Text Models (OpenAI-compatible)",
-        "description": "Returns available text models in the OpenAI-compatible format (`{object: \"list\", data: [...]}`). Use this endpoint if you're using an OpenAI SDK. For richer metadata including pricing and capabilities, use `/text/models` instead.",
+        "description": "Returns available text models in the OpenAI-compatible format (`{object: \"list\", data: [...]}`). Use this endpoint if you're using an OpenAI SDK. For richer metadata including pricing and capabilities, use `/text/models` instead. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1153,7 +1399,7 @@
           "🤖 Models"
         ],
         "summary": "List Image & Video Models",
-        "description": "Returns all available image and video generation models with pricing, capabilities, and metadata. Video models are included here — check the `outputModalities` field to distinguish image vs video models.",
+        "description": "Returns all available image and video generation models with pricing, capabilities, and metadata. Video models are included here — check the `outputModalities` field to distinguish image vs video models. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1250,7 +1496,7 @@
           "🤖 Models"
         ],
         "summary": "List Text Models (Detailed)",
-        "description": "Returns all available text generation models with pricing, capabilities, and metadata including context window size, supported modalities, and tool support.",
+        "description": "Returns all available text generation models with pricing, capabilities, and metadata including context window size, supported modalities, and tool support. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1347,7 +1593,7 @@
           "🤖 Models"
         ],
         "summary": "List Audio Models",
-        "description": "Returns all available audio models (text-to-speech, music generation, and transcription) with pricing, capabilities, and metadata.",
+        "description": "Returns all available audio models (text-to-speech, music generation, and transcription) with pricing, capabilities, and metadata. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1897,8 +2143,7 @@
                     "choices",
                     "created",
                     "model",
-                    "object",
-                    "usage"
+                    "object"
                   ]
                 },
                 "example": {
@@ -3523,6 +3768,7 @@
                 "perplexity-reasoning",
                 "kimi",
                 "gemini-large",
+                "gemini-3-pro-preview",
                 "gemini-legacy",
                 "nova-fast",
                 "glm",
@@ -3607,7 +3853,7 @@
           "🖼️ Image Generation"
         ],
         "summary": "Generate Image",
-        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-pro`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `klein`, `klein-large`, `imagen-4`, `grok-imagine`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
+        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `klein`, `klein-large`, `imagen-4`, `grok-imagine`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
         "responses": {
           "200": {
             "description": "Success - Returns the generated image",
@@ -4014,7 +4260,9 @@
               "enum": [
                 "kontext",
                 "nanobanana",
+                "nanobanana-2",
                 "nanobanana-pro",
+                "seedream5",
                 "seedream",
                 "seedream-pro",
                 "gptimage",
@@ -4033,7 +4281,7 @@
                 "ltx-2"
               ]
             },
-            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream, seedream-pro, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
+            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
           },
           {
             "in": "query",
@@ -4587,7 +4835,9 @@
               "enum": [
                 "kontext",
                 "nanobanana",
+                "nanobanana-2",
                 "nanobanana-pro",
+                "seedream5",
                 "seedream",
                 "seedream-pro",
                 "gptimage",
@@ -4606,7 +4856,7 @@
                 "ltx-2"
               ]
             },
-            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream, seedream-pro, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
+            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
           },
           {
             "in": "query",
@@ -6124,24 +6374,6 @@
                 }
               }
             }
-          },
-          "415": {
-            "description": "Unsupported media type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
           }
         }
       },
@@ -6227,6 +6459,120 @@
           },
           "404": {
             "description": "File not found"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "hash",
+            "required": true
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteByHash",
+        "tags": [
+          "📦 Media Storage"
+        ],
+        "summary": "Delete media",
+        "description": "Delete a file by its content hash. Only the original uploader can delete their own files.",
+        "responses": {
+          "200": {
+            "description": "File deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "deleted",
+                    "id"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid hash format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not the original uploader",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "parameters": [
