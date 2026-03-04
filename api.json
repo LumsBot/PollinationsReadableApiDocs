@@ -523,7 +523,7 @@
     },
     {
       "name": "🖼️ Image Generation",
-      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, klein, klein-large, imagen-4, grok-imagine\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`"
+      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, klein, klein-large, imagen-4, flux-2-dev, grok-imagine\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`"
     },
     {
       "name": "🎬 Video Generation",
@@ -547,7 +547,7 @@
     },
     {
       "name": "🌸 Bring Your Own Pollen",
-      "description": "# Bring Your Own Pollen (BYOP) 🌸\n\nUsers pay for their own AI usage. You pay $0. Ship apps without API costs.\n\n## The Flow\n\n1. User taps \"Connect with Pollinations\"\n2. They sign in → get a temp API key\n3. Their pollen, your app\n\n## Why BYOP?\n\n- **$0 costs** — 1 user or 1000, same price: free\n- **No key drama** — auth flow handles it\n- **Self-regulating** — everyone pays for their own usage\n- **Frontend only** — no backend needed\n\n![Authorize Screen](https://raw.githubusercontent.com/pollinations/pollinations/main/enter.pollinations.ai/public/authorize-screen.png)\n\n## URLs\n\nSay your app is at `https://myapp.com`\n\n**Auth link:**\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com\n```\n\n**With preselected options:**\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&permissions=profile,balance&models=flux,openai&expiry=7&budget=10\n```\n\n| Param | Description | Example |\n|-------|-------------|---------|\n| `models` | Allowed models (comma-separated) | `flux,openai,gptimage` |\n| `budget` | Pollen budget limit | `10` |\n| `expiry` | Key expiry in days (default: 30) | `7` |\n| `permissions` | Account permissions | `profile,balance,usage` |\n\n**Redirect back:**\n```\nhttps://myapp.com#api_key=sk_abc123xyz\n```\n\n> Key is in the `#` fragment — never hits server logs 🔒\n\n## Code\n\n```javascript\n// 1. Send user to auth\nwindow.location.href = `https://enter.pollinations.ai/authorize?redirect_url=${encodeURIComponent(location.href)}`;\n\n// 2. Grab key from URL after redirect\nconst apiKey = new URLSearchParams(location.hash.slice(1)).get('api_key');\n\n// 3. Use their pollen\nfetch('https://gen.pollinations.ai/v1/chat/completions', {\n  method: 'POST',\n  headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },\n  body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: 'yo' }] })\n});\n```\n\nKeys expire in 30 days · revoke anytime from dashboard\n\n---\n\n[📝 Edit this doc](https://github.com/pollinations/pollinations/edit/main/BRING_YOUR_OWN_POLLEN.md) · *h/t [Puter.js](https://docs.puter.com/user-pays-model/) for pioneering this*"
+      "description": "# Bring Your Own Pollen (BYOP)\n\nyour users pay for their own AI usage. you pay $0.\n\n## how it works\n\n1. user taps \"Connect with Pollinations\"\n2. signs in, gets a temp API key\n3. their pollen, your app\n\nwhy this is good:\n- **$0 costs** — 1 user or 1000, same price: free\n- **no key management** — the auth flow handles it\n- **self-regulating** — everyone pays for what they use\n- **frontend only** — no backend needed\n\n![Authorize Screen](https://raw.githubusercontent.com/pollinations/pollinations/main/enter.pollinations.ai/public/authorize-screen.png)\n\n## setup\n\n### 1. register your app (optional but recommended)\n\ngo to [enter.pollinations.ai](https://enter.pollinations.ai), create a publishable key:\n- set **App URL** to your app's URL (e.g. `https://myapp.com`)\n- enable **BYOP** toggle\n- the key name shows up as your app name on the consent screen\n\nthis also lets us see how much traffic your app drives — apps that bring real usage get bumped to higher tiers.\n\n### 2. build the auth link\n\nwith `app_key` (consent screen shows your app name + your github):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey\n```\n\nwithout (still works, just shows the hostname):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com\n```\n\nwith restrictions:\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey&models=flux,openai&expiry=7&budget=10\n```\n\n| param | what it does | example |\n|-------|-------------|---------|\n| `app_key` | your publishable key — shows app name + author | `pk_abc123` |\n| `models` | restrict to specific models | `flux,openai,gptimage` |\n| `budget` | pollen cap | `10` |\n| `expiry` | key lifetime in days (default: 30) | `7` |\n| `permissions` | account access | `profile,balance,usage` |\n\n### 3. handle the redirect\n\nuser comes back with a key in the URL fragment:\n```\nhttps://myapp.com#api_key=sk_abc123xyz\n```\n\nfragment, not query param — never hits server logs.\n\n## code\n\n```javascript\n// send user to auth\nconst params = new URLSearchParams({\n  redirect_url: location.href,\n  app_key: 'pk_yourkey', // optional — shows app name + author\n});\nwindow.location.href = `https://enter.pollinations.ai/authorize?${params}`;\n\n// grab key from URL after redirect\nconst apiKey = new URLSearchParams(location.hash.slice(1)).get('api_key');\n\n// use their pollen\nfetch('https://gen.pollinations.ai/v1/chat/completions', {\n  method: 'POST',\n  headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },\n  body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: 'yo' }] })\n});\n```\n\nkeys expire in 30 days. users can revoke anytime from the dashboard.\n\n---\n\n[edit this doc](https://github.com/pollinations/pollinations/edit/main/BRING_YOUR_OWN_POLLEN.md) · *h/t [Puter.js](https://docs.puter.com/user-pays-model/) for the idea*"
     }
   ],
   "paths": {
@@ -3776,6 +3776,7 @@
                 "nomnom",
                 "polly",
                 "qwen-safety",
+                "step-3.5-flash",
                 "qwen-character"
               ]
             },
@@ -3853,7 +3854,7 @@
           "🖼️ Image Generation"
         ],
         "summary": "Generate Image",
-        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `klein`, `klein-large`, `imagen-4`, `grok-imagine`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
+        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `klein`, `klein-large`, `imagen-4`, `flux-2-dev`, `grok-imagine`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
         "responses": {
           "200": {
             "description": "Success - Returns the generated image",
@@ -4276,6 +4277,7 @@
                 "klein",
                 "klein-large",
                 "imagen-4",
+                "flux-2-dev",
                 "grok-imagine",
                 "grok-video",
                 "ltx-2"
@@ -4851,6 +4853,7 @@
                 "klein",
                 "klein-large",
                 "imagen-4",
+                "flux-2-dev",
                 "grok-imagine",
                 "grok-video",
                 "ltx-2"
