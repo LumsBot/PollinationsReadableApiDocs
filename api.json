@@ -7,7 +7,7 @@
   ],
   "info": {
     "title": "Pollinations API",
-    "description": "## Introduction\n\nGenerate text, images, video, and audio with a single API. OpenAI-compatible — use any OpenAI SDK by changing the base URL.\n\n**Base URL:** `https://gen.pollinations.ai`\n\n**Get your API key:** [enter.pollinations.ai](https://enter.pollinations.ai)\n\n## Overview\n\n| | Capability | Endpoint | Format |\n|---|---|---|---|\n| ✍️ | **Text Generation** | `POST /v1/chat/completions` | OpenAI-compatible |\n| ✍️ | **Simple Text** | `GET /text/{prompt}` | Plain text |\n| 🖼️ | **Image Generation** | `GET /image/{prompt}` | JPEG / PNG |\n| 🎬 | **Video Generation** | `GET /video/{prompt}` | MP4 |\n| 🔊 | **Text-to-Speech** | `GET /audio/{text}` | MP3 |\n| 🔊 | **Music Generation** | `GET /audio/{text}` | MP3 |\n| 🔊 | **Transcription** | `POST /v1/audio/transcriptions` | JSON |\n| 🤖 | **Model Discovery** | `GET /v1/models` | JSON |\n\n## Quick Start\n\n### Generate an Image\n\nPaste this URL in your browser — no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space\n```\n\nOr use it directly in HTML:\n\n```html\n<img src=\"https://gen.pollinations.ai/image/a%20cat%20in%20space\" />\n```\n\n### Generate Text (OpenAI-compatible)\n\n```bash\ncurl https://gen.pollinations.ai/v1/chat/completions \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]}'\n```\n\n### Generate Speech\n\n```bash\ncurl \"https://gen.pollinations.ai/audio/Hello%20world?voice=nova\" \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" -o speech.mp3\n```\n\n## 🔐 Authentication\n\nAll generation requests require an API key from [enter.pollinations.ai](https://enter.pollinations.ai). Model listing endpoints work without authentication.\n\n**Two key types:**\n\n| Type | Prefix | Use case | Rate limits |\n|------|--------|----------|-------------|\n| Secret | `sk_` | Server-side apps | None |\n| Publishable | `pk_` | Client-side apps (beta) | 1 pollen/IP/hour |\n\n**How to authenticate:**\n\n```bash\n# Option 1: Authorization header (recommended)\ncurl -H \"Authorization: Bearer YOUR_API_KEY\" ...\n\n# Option 2: Query parameter\ncurl \"https://gen.pollinations.ai/text/hello?key=YOUR_API_KEY\"\n```\n\n> **Warning:** Never expose secret keys (`sk_`) in client-side code. Use publishable keys (`pk_`) for frontend apps.\n\n## ❌ Errors\n\nAll errors return JSON with a consistent format:\n\n```json\n{\n  \"status\": 400,\n  \"success\": false,\n  \"error\": {\n    \"code\": \"BAD_REQUEST\",\n    \"message\": \"Description of what went wrong\"\n  }\n}\n```\n\n| Status | Meaning |\n|--------|---------|\n| `400` | Invalid parameters or malformed request |\n| `401` | Missing or invalid API key |\n| `402` | Insufficient pollen balance |\n| `403` | API key lacks required permission |\n| `500` | Internal server error |",
+    "description": "## Introduction\n\nGenerate text, images, video, and audio with a single API. OpenAI-compatible — use any OpenAI SDK by changing the base URL.\n\n**Base URL:** `https://gen.pollinations.ai`\n\n**Get your API key:** [enter.pollinations.ai](https://enter.pollinations.ai)\n\n## Overview\n\n| Capability | Endpoint | Format |\n|---|---|---|\n| ✍️ **Text Generation** | `POST /v1/chat/completions` | OpenAI-compatible |\n| ✍️ **Simple Text** | `GET /text/{prompt}` | Plain text |\n| 🖼️ **Image Generation** | `GET /image/{prompt}` | JPEG / PNG |\n| 🎬 **Video Generation** | `GET /video/{prompt}` | MP4 |\n| 🔊 **Text-to-Speech** | `GET /audio/{text}` | MP3 |\n| 🔊 **Music Generation** | `GET /audio/{text}` | MP3 |\n| 🔊 **Transcription** | `POST /v1/audio/transcriptions` | JSON |\n| 🤖 **Model Discovery** | `GET /v1/models` | JSON |\n\n## Quick Start\n\n### Generate an Image\n\nPaste this URL in your browser — no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space\n```\n\nOr use it directly in HTML:\n\n```html\n<img src=\"https://gen.pollinations.ai/image/a%20cat%20in%20space\" />\n```\n\n### Generate Text (OpenAI-compatible)\n\n```bash\ncurl https://gen.pollinations.ai/v1/chat/completions \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"model\": \"openai\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]}'\n```\n\n### Generate Speech\n\n```bash\ncurl \"https://gen.pollinations.ai/audio/Hello%20world?voice=nova\" \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" -o speech.mp3\n```\n\n## 🔐 Authentication\n\nAll generation requests require an API key from [enter.pollinations.ai](https://enter.pollinations.ai). Model listing endpoints work without authentication.\n\n**Two key types:**\n\n| Type | Prefix | Use case | Rate limits |\n|------|--------|----------|-------------|\n| Secret | `sk_` | Server-side apps | None |\n| Publishable | `pk_` | Client-side apps (beta) | 1 pollen/IP/hour |\n\n**How to authenticate:**\n\n```bash\n# Option 1: Authorization header (recommended)\ncurl -H \"Authorization: Bearer YOUR_API_KEY\" ...\n\n# Option 2: Query parameter\ncurl \"https://gen.pollinations.ai/text/hello?key=YOUR_API_KEY\"\n```\n\n> **Warning:** Never expose secret keys (`sk_`) in client-side code. Use publishable keys (`pk_`) for frontend apps.\n\n## ❌ Errors\n\nAll errors return JSON with a consistent format:\n\n```json\n{\n  \"status\": 400,\n  \"success\": false,\n  \"error\": {\n    \"code\": \"BAD_REQUEST\",\n    \"message\": \"Description of what went wrong\"\n  }\n}\n```\n\n| Status | Meaning |\n|--------|---------|\n| `400` | Invalid parameters or malformed request |\n| `401` | Missing or invalid API key |\n| `402` | Insufficient pollen balance |\n| `403` | API key lacks required permission |\n| `500` | Internal server error |",
     "version": "0.3.0"
   },
   "components": {
@@ -451,6 +451,108 @@
           }
         ]
       },
+      "CreateImageResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ]
+      },
+      "CreateImageRequest": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32000,
+            "description": "A text description of the desired image(s)"
+          },
+          "model": {
+            "default": "flux",
+            "description": "The model to use for image generation",
+            "type": "string"
+          },
+          "n": {
+            "default": 1,
+            "description": "Number of images to generate (currently max 1)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1
+          },
+          "size": {
+            "default": "1024x1024",
+            "description": "Image size as WIDTHxHEIGHT (e.g., 1024x1024, 512x512)",
+            "type": "string"
+          },
+          "quality": {
+            "default": "medium",
+            "description": "Image quality. OpenAI 'standard'/'hd' mapped to Pollinations equivalents",
+            "type": "string",
+            "enum": [
+              "standard",
+              "hd",
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "response_format": {
+            "default": "b64_json",
+            "description": "Return format. \"url\" returns a pollinations.ai URL, \"b64_json\" returns base64-encoded image data",
+            "type": "string",
+            "enum": [
+              "url",
+              "b64_json"
+            ]
+          },
+          "user": {
+            "description": "End-user identifier for abuse tracking",
+            "type": "string"
+          },
+          "image": {
+            "description": "Reference image URL(s) for image-to-image generation (Pollinations extension)",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": {}
+      },
       "CreateSpeechRequest": {
         "type": "object",
         "properties": {
@@ -523,11 +625,11 @@
     },
     {
       "name": "🖼️ Image Generation",
-      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, klein, klein-large, imagen-4, flux-2-dev, grok-imagine\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`"
+      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, qwen-image, grok-imagine, grok-imagine-pro, klein, p-image, p-image-edit, nova-canvas\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`\n\n**OpenAI SDK:** Also available via `POST /v1/images/generations` and `POST /v1/images/edits` — use any OpenAI SDK with `base_url=\"https://gen.pollinations.ai/v1\"`."
     },
     {
       "name": "🎬 Video Generation",
-      "description": "Generate videos from text prompts or reference images. Returns MP4.\n\n```\nhttps://gen.pollinations.ai/video/sunset%20timelapse?model=veo&duration=4\n```\n\n**Available models:** veo, seedance, seedance-pro, wan, grok-video, ltx-2\n\n**Video parameters:** `duration` (seconds), `aspectRatio` (`16:9` or `9:16`), `audio` (enable soundtrack), `image` (reference frames)"
+      "description": "Generate videos from text prompts or reference images. Returns MP4.\n\n```\nhttps://gen.pollinations.ai/video/sunset%20timelapse?model=veo&duration=4\n```\n\n**Available models:** veo, seedance, seedance-pro, wan, wan-fast, grok-video-pro, ltx-2, p-video, nova-reel\n\n**Video parameters:** `duration` (seconds), `aspectRatio` (`16:9` or `9:16`), `audio` (enable soundtrack), `image` (reference frames)"
     },
     {
       "name": "🔊 Audio Generation",
@@ -547,7 +649,7 @@
     },
     {
       "name": "🌸 Bring Your Own Pollen",
-      "description": "# Bring Your Own Pollen (BYOP)\n\nyour users pay for their own AI usage. you pay $0.\n\n## how it works\n\n1. user taps \"Connect with Pollinations\"\n2. signs in, gets a temp API key\n3. their pollen, your app\n\nwhy this is good:\n- **$0 costs** — 1 user or 1000, same price: free\n- **no key management** — the auth flow handles it\n- **self-regulating** — everyone pays for what they use\n- **frontend only** — no backend needed\n\n![Authorize Screen](https://raw.githubusercontent.com/pollinations/pollinations/main/enter.pollinations.ai/public/authorize-screen.png)\n\n## setup\n\n### 1. register your app (optional but recommended)\n\ngo to [enter.pollinations.ai](https://enter.pollinations.ai), create a publishable key:\n- set **App URL** to your app's URL (e.g. `https://myapp.com`)\n- enable **BYOP** toggle\n- the key name shows up as your app name on the consent screen\n\nthis also lets us see how much traffic your app drives — apps that bring real usage get bumped to higher tiers.\n\n### 2. build the auth link\n\nwith `app_key` (consent screen shows your app name + your github):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey\n```\n\nwithout (still works, just shows the hostname):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com\n```\n\nwith restrictions:\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey&models=flux,openai&expiry=7&budget=10\n```\n\n| param | what it does | example |\n|-------|-------------|---------|\n| `app_key` | your publishable key — shows app name + author | `pk_abc123` |\n| `models` | restrict to specific models | `flux,openai,gptimage` |\n| `budget` | pollen cap | `10` |\n| `expiry` | key lifetime in days (default: 30) | `7` |\n| `permissions` | account access | `profile,balance,usage` |\n\n### 3. handle the redirect\n\nuser comes back with a key in the URL fragment:\n```\nhttps://myapp.com#api_key=sk_abc123xyz\n```\n\nfragment, not query param — never hits server logs.\n\n## code\n\n```javascript\n// send user to auth\nconst params = new URLSearchParams({\n  redirect_url: location.href,\n  app_key: 'pk_yourkey', // optional — shows app name + author\n});\nwindow.location.href = `https://enter.pollinations.ai/authorize?${params}`;\n\n// grab key from URL after redirect\nconst apiKey = new URLSearchParams(location.hash.slice(1)).get('api_key');\n\n// use their pollen\nfetch('https://gen.pollinations.ai/v1/chat/completions', {\n  method: 'POST',\n  headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },\n  body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: 'yo' }] })\n});\n```\n\nkeys expire in 30 days. users can revoke anytime from the dashboard.\n\n---\n\n[edit this doc](https://github.com/pollinations/pollinations/edit/main/BRING_YOUR_OWN_POLLEN.md) · *h/t [Puter.js](https://docs.puter.com/user-pays-model/) for the idea*"
+      "description": "# 🌼 Bring Your Own Pollen (BYOP)\n\nYour users pay for their own AI usage. You pay $0.\n\n## 🔄 How It Works\n\n1. User connects — via your web app or CLI\n2. Signs in, creates a scoped API key\n3. Their pollen, your app\n\nWhy this is good:\n\n- 💸 **$0 costs** — scales to any number of users without costing you a cent\n- 🔑 **No key management** — the auth flow handles it\n- ⚖️ **Self-regulating** — everyone pays for what they use\n- 🌐 **Works everywhere** — web apps, CLIs, MCP servers, anything\n\nBoth flows land on the same authorize screen where users set model restrictions, budget, and expiry. Same key, same pollen, different entry point.\n\n## 🗝️ App Key\n\nAn **App Key** is a publishable key (`pk_...`) you create on [enter.pollinations.ai](https://enter.pollinations.ai) specifically for BYOP. It's optional but strongly recommended:\n\n| Without App Key | With App Key |\n|----------------|-------------|\n| Consent screen shows generic hostname | Consent screen shows **your app name + your GitHub** |\n| No traffic attribution | Traffic your app drives is **tracked to your account** |\n| No tier benefit | Real usage → **automatic tier upgrades** → higher pollen grants |\n\nTo create one, go to [enter.pollinations.ai](https://enter.pollinations.ai) → **Create New App Key**:\n\n![Create New App Key](https://media.pollinations.ai/aa8ca9fe3110aff7)\n\nSet the **Name** (shows on the consent screen) and **App URL** (your app's domain). The key you get back is your `app_key`.\n\nWhen users authorize, this is what they see:\n\n![Authorize Screen](https://media.pollinations.ai/b030a47e32df2b2b)\n\n## ⚙️ Web Apps (Redirect Flow)\n\n### 1. Build the Auth Link\n\nWith `app_key` (consent screen shows your app name + your GitHub):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey\n```\n\nWithout (still works, just shows the hostname):\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com\n```\n\nWith restrictions:\n```\nhttps://enter.pollinations.ai/authorize?redirect_url=https://myapp.com&app_key=pk_yourkey&models=flux,openai&expiry=7&budget=10\n```\n\n| Param | What it does | Example |\n|-------|-------------|---------|\n| `app_key` | Your publishable key — shows app name + author on consent screen, tracks traffic for tier upgrades | `pk_abc123` |\n| `redirect_url` | Where users return after authorizing — receives the temp API key in the URL fragment | `https://myapp.com` |\n| `models` | Restrict to specific models | `flux,openai,gptimage` |\n| `budget` | Pollen cap | `10` |\n| `expiry` | Key lifetime in days (default: 30) | `7` |\n| `permissions` | Account access | `profile,balance,usage` |\n\n### 2. Handle the Redirect\n\nUser comes back with a key in the URL fragment:\n```\nhttps://myapp.com#api_key=sk_abc123xyz\n```\n\nFragment, not query param — never hits server logs. 🔒\n\n### 💻 Code\n\n```javascript\n// Send user to auth\nconst params = new URLSearchParams({\n  redirect_url: location.href,\n  app_key: 'pk_yourkey', // optional — shows app name + author\n});\nwindow.location.href = `https://enter.pollinations.ai/authorize?${params}`;\n\n// Grab key from URL after redirect\nconst apiKey = new URLSearchParams(location.hash.slice(1)).get('api_key');\n\n// Use their pollen\nfetch('https://gen.pollinations.ai/v1/chat/completions', {\n  method: 'POST',\n  headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },\n  body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: 'yo' }] })\n});\n```\n\n## 🖥️ CLIs & Headless Apps (Device Flow)\n\nSame authorize screen, but the user opens a browser separately. Your CLI polls for the key.\n\n**Where this fits:**\n- **Discord / Telegram / WhatsApp bots** — bot DMs the code, user approves in browser, bot gets their key\n- **CLI tools** — `pollinations login` opens a browser, CLI waits for approval\n- **MCP servers** — AI agent requests access, user approves from their browser\n- **Raspberry Pi / IoT** — headless device displays a code, user approves on their phone\n- **VS Code extensions** — extension shows the code, user approves in browser\n\n```bash\n# 1. request a device code (pass your app_key as client_id for attribution)\ncurl -X POST https://enter.pollinations.ai/api/device/code \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"client_id\": \"pk_yourkey\", \"scope\": \"generate\"}'\n# → { \"device_code\": \"...\", \"user_code\": \"ABCD-1234\", \"verification_uri\": \"/device\" }\n\n# 2. tell user: \"go to enter.pollinations.ai/device and enter ABCD-1234\"\n\n# 3. poll for the key (every 5s)\ncurl -X POST https://enter.pollinations.ai/api/device/token \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"device_code\": \"...\"}'\n# pending → { \"error\": \"authorization_pending\" }\n# done    → { \"access_token\": \"sk_...\", \"token_type\": \"bearer\", \"scope\": \"generate\" }\n```\n\n## 👤 Who's Using This Key?\n\nOnce you have a key, you can check who it belongs to:\n\n```bash\ncurl https://enter.pollinations.ai/api/device/userinfo \\\n  -H 'Authorization: Bearer sk_...'\n# → { \"sub\": \"user-id\", \"name\": \"Thomas\", \"preferred_username\": \"voodoohop\", \"email\": \"...\", \"picture\": \"...\" }\n```\n\nStandard OIDC userinfo shape — works with any `sk_` or `pk_` key.\n\n---\n\n🕐 Keys expire in 30 days. Users can revoke anytime from the dashboard.\n\n[edit this doc](https://github.com/pollinations/pollinations/edit/main/BRING_YOUR_OWN_POLLEN.md) · *h/t [Puter.js](https://docs.puter.com/user-pays-model/) for the idea*"
     }
   ],
   "paths": {
@@ -643,7 +745,7 @@
                           "type": "null"
                         }
                       ],
-                      "description": "Next daily pollen reset timestamp (ISO 8601)"
+                      "description": "Next pollen refill timestamp (ISO 8601)"
                     }
                   },
                   "required": [
@@ -1240,8 +1342,8 @@
         "tags": [
           "🤖 Models"
         ],
-        "summary": "List Text Models (OpenAI-compatible)",
-        "description": "Returns available text models in the OpenAI-compatible format (`{object: \"list\", data: [...]}`). Use this endpoint if you're using an OpenAI SDK. For richer metadata including pricing and capabilities, use `/text/models` instead. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
+        "summary": "List Models (OpenAI-compatible)",
+        "description": "Returns available models (text, image, audio) in the OpenAI-compatible format (`{object: \"list\", data: [...]}`). Use this endpoint if you're using an OpenAI SDK. For richer metadata including pricing and capabilities, use `/text/models`, `/image/models`, or `/audio/models` instead. When authenticated: models are filtered by API key permissions, and `paid_only` models are hidden if the account has no paid balance.",
         "responses": {
           "200": {
             "description": "Success",
@@ -1268,6 +1370,33 @@
                           },
                           "created": {
                             "type": "number"
+                          },
+                          "input_modalities": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "output_modalities": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "supported_endpoints": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "tools": {
+                            "type": "boolean"
+                          },
+                          "reasoning": {
+                            "type": "boolean"
+                          },
+                          "context_length": {
+                            "type": "number"
                           }
                         },
                         "required": [
@@ -1275,7 +1404,7 @@
                           "object",
                           "created"
                         ],
-                        "description": "OpenAI-compatible model object"
+                        "description": "OpenAI-compatible model object with capability metadata"
                       }
                     }
                   },
@@ -2835,6 +2964,7 @@
                           "echo",
                           "fable",
                           "onyx",
+                          "nova",
                           "shimmer",
                           "coral",
                           "verse",
@@ -3758,8 +3888,11 @@
                 "gemini-fast",
                 "deepseek",
                 "grok",
+                "grok-reasoning",
+                "grok-legacy",
                 "gemini-search",
                 "midijourney",
+                "midijourney-large",
                 "claude-fast",
                 "claude",
                 "claude-large",
@@ -3768,16 +3901,17 @@
                 "perplexity-reasoning",
                 "kimi",
                 "gemini-large",
-                "gemini-3-pro-preview",
+                "gemini-3-pro-legacy",
                 "gemini-legacy",
                 "nova-fast",
+                "nova",
                 "glm",
                 "minimax",
-                "nomnom",
                 "polly",
-                "qwen-safety",
-                "step-3.5-flash",
-                "qwen-character"
+                "qwen-coder-large",
+                "qwen-large",
+                "qwen-vision",
+                "qwen-safety"
               ]
             },
             "description": "Text model to use. See /v1/models or /text/models for the full list of available models."
@@ -3854,7 +3988,7 @@
           "🖼️ Image Generation"
         ],
         "summary": "Generate Image",
-        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `klein`, `klein-large`, `imagen-4`, `flux-2-dev`, `grok-imagine`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
+        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `qwen-image`, `grok-imagine`, `grok-imagine-pro`, `klein`, `p-image`, `p-image-edit`, `nova-canvas`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
         "responses": {
           "200": {
             "description": "Success - Returns the generated image",
@@ -4274,16 +4408,21 @@
                 "seedance",
                 "seedance-pro",
                 "wan",
-                "klein",
-                "klein-large",
-                "imagen-4",
-                "flux-2-dev",
+                "wan-fast",
+                "qwen-image",
                 "grok-imagine",
-                "grok-video",
-                "ltx-2"
+                "grok-imagine-pro",
+                "grok-video-pro",
+                "klein",
+                "ltx-2",
+                "p-image",
+                "p-image-edit",
+                "p-video",
+                "nova-canvas",
+                "nova-reel"
               ]
             },
-            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
+            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein. **Video:** veo, seedance, seedance-pro, wan. See /image/models for full list."
           },
           {
             "in": "query",
@@ -4383,9 +4522,9 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 10
+              "maximum": 30
             },
-            "description": "Video duration in seconds. Only applies to video models. `veo`: 4, 6, or 8s. `seedance`: 2-10s. `wan`: 2-15s. `ltx-2`: up to ~10s."
+            "description": "Video duration in seconds. Only applies to video models. `veo`: 4, 6, or 8s. `seedance`: 2-10s. `wan`: 2-15s. `nova-reel`: 6-30s (multiples of 6)."
           },
           {
             "in": "query",
@@ -4402,7 +4541,7 @@
               "default": false,
               "type": "boolean"
             },
-            "description": "Generate audio for the video. Only applies to video models. Note: `wan` and `ltx-2` generate audio regardless of this flag. For `veo`, set to `true` to enable audio."
+            "description": "Generate audio for the video. Only applies to video models. Note: `wan` generates audio regardless of this flag. For `veo`, set to `true` to enable audio."
           }
         ],
         "x-codeSamples": [
@@ -4436,7 +4575,7 @@
           "🎬 Video Generation"
         ],
         "summary": "Generate Video",
-        "description": "Generate a video from a text prompt. Returns MP4.\n\n**Available models:** `veo`, `seedance`, `seedance-pro`, `wan`, `grok-video`, `ltx-2`.\n\nUse `duration` to set video length, `aspectRatio` for orientation, and `audio` to enable soundtrack generation.\n\nYou can also pass reference images via the `image` parameter — for example, `veo` supports start and end frames for interpolation.\n\nBrowse all available models at [`/image/models`](https://gen.pollinations.ai/image/models).",
+        "description": "Generate a video from a text prompt. Returns MP4.\n\n**Available models:** `veo`, `seedance`, `seedance-pro`, `wan`, `wan-fast`, `grok-video-pro`, `ltx-2`, `p-video`, `nova-reel`.\n\nUse `duration` to set video length, `aspectRatio` for orientation, and `audio` to enable soundtrack generation.\n\nYou can also pass reference images via the `image` parameter — for example, `veo` supports start and end frames for interpolation.\n\nBrowse all available models at [`/image/models`](https://gen.pollinations.ai/image/models).",
         "responses": {
           "200": {
             "description": "Success - Returns the generated video",
@@ -4850,16 +4989,21 @@
                 "seedance",
                 "seedance-pro",
                 "wan",
-                "klein",
-                "klein-large",
-                "imagen-4",
-                "flux-2-dev",
+                "wan-fast",
+                "qwen-image",
                 "grok-imagine",
-                "grok-video",
-                "ltx-2"
+                "grok-imagine-pro",
+                "grok-video-pro",
+                "klein",
+                "ltx-2",
+                "p-image",
+                "p-image-edit",
+                "p-video",
+                "nova-canvas",
+                "nova-reel"
               ]
             },
-            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein, klein-large, imagen-4, grok-imagine. **Video:** veo, seedance, seedance-pro, wan, ltx-2, grok-video. See /image/models for full list."
+            "description": "Model to use. **Image:** flux, zimage, gptimage, kontext, seedream5, nanobanana, nanobanana-pro, klein. **Video:** veo, seedance, seedance-pro, wan. See /image/models for full list."
           },
           {
             "in": "query",
@@ -4959,9 +5103,9 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 10
+              "maximum": 30
             },
-            "description": "Video duration in seconds. Only applies to video models. `veo`: 4, 6, or 8s. `seedance`: 2-10s. `wan`: 2-15s. `ltx-2`: up to ~10s."
+            "description": "Video duration in seconds. Only applies to video models. `veo`: 4, 6, or 8s. `seedance`: 2-10s. `wan`: 2-15s. `nova-reel`: 6-30s (multiples of 6)."
           },
           {
             "in": "query",
@@ -4978,7 +5122,7 @@
               "default": false,
               "type": "boolean"
             },
-            "description": "Generate audio for the video. Only applies to video models. Note: `wan` and `ltx-2` generate audio regardless of this flag. For `veo`, set to `true` to enable audio."
+            "description": "Generate audio for the video. Only applies to video models. Note: `wan` generates audio regardless of this flag. For `veo`, set to `true` to enable audio."
           }
         ],
         "x-codeSamples": [
@@ -5411,6 +5555,7 @@
                 "echo",
                 "fable",
                 "onyx",
+                "nova",
                 "shimmer",
                 "ash",
                 "ballad",
@@ -5521,6 +5666,669 @@
             "source": "const response = await fetch(\n  \"https://gen.pollinations.ai/audio/Hello%20world?voice=nova\",\n  { headers: { Authorization: \"Bearer YOUR_API_KEY\" } },\n);\nconst audio = await response.blob();"
           }
         ]
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "postGenerateV1ImagesGenerations",
+        "tags": [
+          "🖼️ Image Generation"
+        ],
+        "summary": "Generate Image (OpenAI-compatible)",
+        "description": "OpenAI-compatible image generation endpoint.\n\nGenerate images from text prompts. Supports `response_format: \"url\"` (returns a pollinations.ai URL) or `\"b64_json\"` (returns base64-encoded image data, default).\n\n**Authentication:** Include your API key as `Authorization: Bearer YOUR_API_KEY`.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Something was wrong with the input data, check the details for more info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 400
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "BAD_REQUEST"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Something was wrong with the input data, check the details for more info."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ValidationErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required. Please provide an API key via Authorization header (Bearer token) or ?key= query parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 401
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "UNAUTHORIZED"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Authentication required. Please provide an API key via Authorization header (Bearer token) or ?key= query parameter."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient pollen balance or API key budget exhausted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 402
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "PAYMENT_REQUIRED"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Insufficient pollen balance or API key budget exhausted."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied! You don't have the required permissions for this resource or model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 403
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "FORBIDDEN"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Access denied! You don't have the required permissions for this resource or model."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Oh snap, something went wrong on our end. We're on it!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 500
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "INTERNAL_ERROR"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Oh snap, something went wrong on our end. We're on it!"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImageRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/images/edits": {
+      "post": {
+        "operationId": "postGenerateV1ImagesEdits",
+        "tags": [
+          "🖼️ Image Generation"
+        ],
+        "summary": "Edit Image (OpenAI-compatible)",
+        "description": "OpenAI-compatible image editing endpoint.\n\nEdit images using a text prompt and one or more source images.\nAccepts JSON with image URLs or multipart/form-data with file uploads.\n\n**Authentication:** Include your API key as `Authorization: Bearer YOUR_API_KEY`.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Something was wrong with the input data, check the details for more info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 400
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "BAD_REQUEST"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Something was wrong with the input data, check the details for more info."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ValidationErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required. Please provide an API key via Authorization header (Bearer token) or ?key= query parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 401
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "UNAUTHORIZED"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Authentication required. Please provide an API key via Authorization header (Bearer token) or ?key= query parameter."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient pollen balance or API key budget exhausted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 402
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "PAYMENT_REQUIRED"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Insufficient pollen balance or API key budget exhausted."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied! You don't have the required permissions for this resource or model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 403
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "FORBIDDEN"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Access denied! You don't have the required permissions for this resource or model."
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Oh snap, something went wrong on our end. We're on it!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "number",
+                      "const": 500
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "INTERNAL_ERROR"
+                        },
+                        "message": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Oh snap, something went wrong on our end. We're on it!"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "$ref": "#/components/schemas/ErrorDetails"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "cause": {}
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "timestamp",
+                        "details"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/audio/speech": {
