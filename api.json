@@ -26,7 +26,15 @@
           "name": {
             "type": "string"
           },
-          "stack": {
+          "upstreamStatus": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "upstreamHost": {
+            "type": "string"
+          },
+          "upstreamBody": {
             "type": "string"
           }
         },
@@ -250,9 +258,6 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
-          },
-          "stack": {
             "type": "string"
           },
           "formErrors": {
@@ -606,9 +611,21 @@
             "example": false,
             "type": "boolean"
           },
+          "seed": {
+            "description": "Seed for deterministic output. Same seed + params = best-effort return of the same cached result. Omit for random.",
+            "example": 42,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
           "style": {
             "description": "Style/genre tags for music generation (acestep only). If omitted, style is auto-detected from the input text.",
             "example": "brazilian berimbau instrumental",
+            "type": "string"
+          },
+          "instruct": {
+            "description": "Emotion/style instruction (qwen-tts-instruct only). e.g. 'excited and cheerful'.",
+            "example": "speak softly and warmly",
             "type": "string"
           }
         },
@@ -630,7 +647,7 @@
     },
     {
       "name": "🖼️ Image Generation",
-      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, flux, zimage, wan-image, wan-image-pro, qwen-image, grok-imagine, grok-imagine-pro, klein, p-image, p-image-edit, nova-canvas\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`\n\n**OpenAI SDK:** Also available via `POST /v1/images/generations` and `POST /v1/images/edits` — use any OpenAI SDK with `base_url=\"https://gen.pollinations.ai/v1\"`."
+      "description": "Generate images from text prompts via a simple GET request. Returns JPEG or PNG.\n\n**Quick start** — paste in your browser, no code needed:\n\n```\nhttps://gen.pollinations.ai/image/a%20cat%20in%20space?model=flux\n```\n\n**Available models:** kontext, nanobanana, nanobanana-2, nanobanana-pro, seedream5, seedream, seedream-pro, gptimage, gptimage-large, gpt-image-2, flux, zimage, wan-image, wan-image-pro, qwen-image, grok-imagine, grok-imagine-pro, klein, p-image, p-image-edit, nova-canvas\n\n**Key parameters:** `model`, `width`, `height`, `seed`, `enhance`, `negative_prompt`, `image` (for editing), `quality`, `transparent`\n\n**OpenAI SDK:** Also available via `POST /v1/images/generations` and `POST /v1/images/edits` — use any OpenAI SDK with `base_url=\"https://gen.pollinations.ai/v1\"`."
     },
     {
       "name": "🎬 Video Generation",
@@ -646,7 +663,7 @@
     },
     {
       "name": "👤 Account",
-      "description": "Manage your account, check your pollen balance, and view usage history. All endpoints require authentication.\n\n| Endpoint | Description |\n|----------|-------------|\n| `GET /account/profile` | Name, email, tier, creation date |\n| `GET /account/balance` | Current pollen balance |\n| `GET /account/usage` | Per-request history with costs |\n| `GET /account/usage/daily` | Daily aggregated usage for dashboards |\n| `GET /account/key` | API key validity, type, and permissions |\n\nWhen using API keys, specific permissions may be required (e.g., `account:balance`, `account:usage`)."
+      "description": "Manage your account, check your pollen balance, and view usage history. All endpoints require authentication.\n\n| Endpoint | Description |\n|----------|-------------|\n| `GET /account/profile` | GitHub username and profile image |\n| `GET /account/balance` | Current pollen balance |\n| `GET /account/usage` | Per-request history with costs |\n| `GET /account/usage/daily` | Daily aggregated usage for dashboards |\n| `GET /account/key` | API key validity, type, and permissions |\n\nWhen using API keys, specific permissions may be required (e.g., `account:usage`, `account:profile`)."
     },
     {
       "name": "📦 Media Storage",
@@ -665,7 +682,7 @@
           "👤 Account"
         ],
         "summary": "Get Profile",
-        "description": "Returns your account profile including name, email, tier level, and account creation date. Requires `account:profile` permission when using API keys.",
+        "description": "Returns your account profile. GitHub username, profile image, current tier, and next pollen refill timestamp are always returned. Name and email are returned only when the API key has the `account:profile` permission.",
         "responses": {
           "200": {
             "description": "User profile",
@@ -674,30 +691,6 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "name": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ],
-                      "description": "User's display name"
-                    },
-                    "email": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ],
-                      "description": "User's email address"
-                    },
                     "githubUsername": {
                       "anyOf": [
                         {
@@ -733,12 +726,6 @@
                       ],
                       "description": "User's current tier level"
                     },
-                    "createdAt": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-                      "description": "Account creation timestamp (ISO 8601)"
-                    },
                     "nextResetAt": {
                       "anyOf": [
                         {
@@ -750,37 +737,51 @@
                           "type": "null"
                         }
                       ],
-                      "description": "Next pollen refill timestamp (ISO 8601)"
+                      "description": "Next pollen refill timestamp (ISO 8601). `null` for tiers with no refill."
+                    },
+                    "name": {
+                      "description": "User's display name (only returned when the key has `account:profile`)",
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "email": {
+                      "description": "User's email address (only returned when the key has `account:profile`)",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "email",
+                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
                   "required": [
-                    "name",
-                    "email",
                     "githubUsername",
                     "image",
                     "tier",
-                    "createdAt",
                     "nextResetAt"
                   ]
                 },
                 "example": {
-                  "name": "Jane Developer",
-                  "email": "jane@example.com",
                   "githubUsername": "janedeveloper",
                   "image": "https://avatars.example.com/jane.jpg",
-                  "tier": "seed",
-                  "displayTier": "Seed",
-                  "createdAt": "2024-01-15T10:30:00.000Z",
-                  "nextResetAt": "2024-02-15T14:00:00.000Z"
+                  "name": "Jane Developer",
+                  "email": "jane@example.com"
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Permission denied - API key missing `account:profile` permission"
           }
         },
         "x-codeSamples": [
@@ -792,12 +793,12 @@
           {
             "label": "Python",
             "lang": "Python",
-            "source": "import requests\n\nresponse = requests.get(\n    \"https://gen.pollinations.ai/account/profile\",\n    headers={\"Authorization\": \"Bearer YOUR_API_KEY\"},\n)\nprofile = response.json()\nprint(f\"{profile['name']} ({profile['tier']})\")"
+            "source": "import requests\n\nresponse = requests.get(\n    \"https://gen.pollinations.ai/account/profile\",\n    headers={\"Authorization\": \"Bearer YOUR_API_KEY\"},\n)\nprofile = response.json()\nprint(profile[\"githubUsername\"])"
           },
           {
             "label": "JavaScript",
             "lang": "JavaScript",
-            "source": "const response = await fetch(\n  \"https://gen.pollinations.ai/account/profile\",\n  { headers: { Authorization: \"Bearer YOUR_API_KEY\" } },\n);\nconst profile = await response.json();\nconsole.log(`${profile.name} (${profile.tier})`);"
+            "source": "const response = await fetch(\n  \"https://gen.pollinations.ai/account/profile\",\n  { headers: { Authorization: \"Bearer YOUR_API_KEY\" } },\n);\nconst profile = await response.json();\nconsole.log(profile.githubUsername);"
           }
         ]
       }
@@ -809,7 +810,7 @@
           "👤 Account"
         ],
         "summary": "Get Balance",
-        "description": "Returns your current pollen balance. If the API key has a budget limit, returns the key's remaining budget instead. Requires `account:balance` permission when using API keys.",
+        "description": "Returns the pollen balance visible to the caller. API keys with a budget always see their remaining budget (no scope needed). Session auth or API keys with the `account:usage` scope see the full account balance.",
         "responses": {
           "200": {
             "description": "Pollen balance",
@@ -837,7 +838,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Permission denied - API key missing `account:balance` permission"
+            "description": "Permission denied - API key has no budget and is missing the `account:usage` scope"
           }
         },
         "x-codeSamples": [
@@ -866,7 +867,7 @@
           "👤 Account"
         ],
         "summary": "Get Usage History",
-        "description": "Returns your request history with per-request details: model used, token counts, cost, and response time. Defaults to the last 30 days, supports up to 90 days via `days`, and supports JSON and CSV export. Each response is capped at 50,000 rows. Use `before` for cursor-based pagination. Requires `account:usage` permission when using API keys.",
+        "description": "Returns your request history with per-request details: model used, token counts, cost, and response time. Defaults to the last 30 days, supports up to 90 days via `days`, or exact day/week/month periods via `granularity` and `period`. Supports JSON and CSV export. Each response is capped at 50,000 rows. Use `before` for cursor-based pagination. Requires `account:usage` permission when using API keys.",
         "responses": {
           "200": {
             "description": "Usage records",
@@ -1060,6 +1061,25 @@
               "minimum": 1,
               "maximum": 90
             }
+          },
+          {
+            "in": "query",
+            "name": "granularity",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "x-codeSamples": [
@@ -1083,7 +1103,7 @@
           "👤 Account"
         ],
         "summary": "Get Daily Usage",
-        "description": "Returns daily aggregated usage for the requested time window (max 90 days), grouped by date and model. Useful for dashboards and spending analysis. Supports JSON and CSV export. Results are cached for 1 hour. Requires `account:usage` permission when using API keys.",
+        "description": "Returns daily aggregated usage for the requested time window, grouped by date and model. Use `days` for rolling windows or `granularity` and `period` for exact day/week/month periods. Useful for dashboards and spending analysis. Supports JSON and CSV export. Results are cached for 1 hour. Requires `account:usage` permission when using API keys.",
         "responses": {
           "200": {
             "description": "Daily usage records aggregated by date/model",
@@ -1183,6 +1203,25 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 90
+            }
+          },
+          {
+            "in": "query",
+            "name": "granularity",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -1293,7 +1332,7 @@
                     ]
                   },
                   "accountPermissions": {
-                    "description": "Account permissions (e.g. [\"balance\", \"usage\"]). \"keys\" is auto-stripped.",
+                    "description": "Account permissions (e.g. [\"usage\"]). \"keys\" is auto-stripped.",
                     "anyOf": [
                       {
                         "type": "array",
@@ -1482,15 +1521,15 @@
                 "example": {
                   "valid": true,
                   "type": "secret",
-                  "prefix": "sk_",
+                  "name": "my-bot",
                   "expiresAt": null,
-                  "permissions": [
-                    "generate:text",
-                    "generate:image",
-                    "generate:audio",
-                    "account:balance",
-                    "account:usage"
-                  ],
+                  "expiresIn": null,
+                  "permissions": {
+                    "models": null,
+                    "account": [
+                      "usage"
+                    ]
+                  },
                   "pollenBudget": null,
                   "rateLimitEnabled": false
                 }
@@ -1516,6 +1555,227 @@
             "label": "JavaScript",
             "lang": "JavaScript",
             "source": "const response = await fetch(\n  \"https://gen.pollinations.ai/account/key\",\n  { headers: { Authorization: \"Bearer YOUR_API_KEY\" } },\n);\nconst keyInfo = await response.json();\nconsole.log(`Valid: ${keyInfo.valid}, Type: ${keyInfo.type}`);"
+          }
+        ]
+      }
+    },
+    "/account/key/usage": {
+      "get": {
+        "operationId": "getAccountKeyUsage",
+        "tags": [
+          "👤 Account"
+        ],
+        "summary": "Get API Key Usage",
+        "description": "Returns usage history for the API key used in the request. No scope required — a key can always read its own usage. For account-wide usage across all keys, use `/account/usage` with the `account:usage` scope.",
+        "responses": {
+          "200": {
+            "description": "Usage records for this key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usage": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "description": "Request timestamp (YYYY-MM-DD HH:mm:ss format)"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Request type (e.g., 'generate.image', 'generate.text')"
+                          },
+                          "model": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Model used for generation"
+                          },
+                          "api_key": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "API key identifier used (masked)"
+                          },
+                          "api_key_type": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Type of API key ('secret', 'publishable')"
+                          },
+                          "meter_source": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Billing source ('tier', 'pack', 'crypto')"
+                          },
+                          "input_text_tokens": {
+                            "type": "number",
+                            "description": "Number of input text tokens"
+                          },
+                          "input_cached_tokens": {
+                            "type": "number",
+                            "description": "Number of cached input tokens"
+                          },
+                          "input_audio_tokens": {
+                            "type": "number",
+                            "description": "Number of input audio tokens"
+                          },
+                          "input_image_tokens": {
+                            "type": "number",
+                            "description": "Number of input image tokens"
+                          },
+                          "output_text_tokens": {
+                            "type": "number",
+                            "description": "Number of output text tokens"
+                          },
+                          "output_reasoning_tokens": {
+                            "type": "number",
+                            "description": "Number of reasoning tokens (for models with chain-of-thought)"
+                          },
+                          "output_audio_tokens": {
+                            "type": "number",
+                            "description": "Number of output audio tokens"
+                          },
+                          "output_image_tokens": {
+                            "type": "number",
+                            "description": "Number of output image tokens (1 per image)"
+                          },
+                          "cost_usd": {
+                            "type": "number",
+                            "description": "Cost in USD for this request"
+                          },
+                          "response_time_ms": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Response time in milliseconds"
+                          }
+                        },
+                        "required": [
+                          "timestamp",
+                          "type",
+                          "model",
+                          "api_key",
+                          "api_key_type",
+                          "meter_source",
+                          "input_text_tokens",
+                          "input_cached_tokens",
+                          "input_audio_tokens",
+                          "input_image_tokens",
+                          "output_text_tokens",
+                          "output_reasoning_tokens",
+                          "output_audio_tokens",
+                          "output_image_tokens",
+                          "cost_usd",
+                          "response_time_ms"
+                        ]
+                      },
+                      "description": "Array of usage records"
+                    },
+                    "count": {
+                      "type": "number",
+                      "description": "Number of records returned"
+                    }
+                  },
+                  "required": [
+                    "usage",
+                    "count"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key required (this endpoint is key-auth only)"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "default": "json",
+              "type": "string",
+              "enum": [
+                "json",
+                "csv"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50000
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "days",
+            "schema": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            }
+          },
+          {
+            "in": "query",
+            "name": "granularity",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "schema": {
+              "type": "string"
+            }
           }
         ]
       }
@@ -4073,6 +4333,7 @@
                 "gemini-flash-lite-3.1",
                 "gemini-fast",
                 "deepseek",
+                "deepseek-pro",
                 "grok",
                 "grok-large",
                 "gemini-search",
@@ -4081,12 +4342,12 @@
                 "claude-fast",
                 "claude",
                 "claude-large",
-                "claude-legacy",
+                "claude-opus-4.7",
                 "perplexity-fast",
                 "perplexity-reasoning",
                 "kimi",
+                "kimi-k2.6",
                 "gemini-large",
-                "gemini-legacy",
                 "nova-fast",
                 "nova",
                 "glm",
@@ -4173,7 +4434,7 @@
           "🖼️ Image Generation"
         ],
         "summary": "Generate Image",
-        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `wan-image`, `wan-image-pro`, `qwen-image`, `grok-imagine`, `grok-imagine-pro`, `klein`, `p-image`, `p-image-edit`, `nova-canvas`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
+        "description": "Generate an image from a text prompt. Returns JPEG or PNG.\n\n**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `gpt-image-2`, `flux`, `zimage`, `wan-image`, `wan-image-pro`, `qwen-image`, `grok-imagine`, `grok-imagine-pro`, `klein`, `p-image`, `p-image-edit`, `nova-canvas`. `zimage` is the default.\n\nBrowse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).",
         "responses": {
           "200": {
             "description": "Success - Returns the generated image",
@@ -4587,6 +4848,7 @@
                 "seedream-pro",
                 "gptimage",
                 "gptimage-large",
+                "gpt-image-2",
                 "flux",
                 "zimage",
                 "veo",
@@ -4685,7 +4947,7 @@
                 "hd"
               ]
             },
-            "description": "Image quality level. Only supported by `gptimage` and `gptimage-large`."
+            "description": "Image quality level. Only supported by `gptimage`, `gptimage-large`, and `gpt-image-2`."
           },
           {
             "in": "query",
@@ -4702,7 +4964,7 @@
               "default": false,
               "type": "boolean"
             },
-            "description": "Generate image with transparent background. Only supported by `gptimage` and `gptimage-large`."
+            "description": "Generate image with transparent background. Only supported by `gptimage`, `gptimage-large`, and `gpt-image-2`."
           },
           {
             "in": "query",
@@ -5171,6 +5433,7 @@
                 "seedream-pro",
                 "gptimage",
                 "gptimage-large",
+                "gpt-image-2",
                 "flux",
                 "zimage",
                 "veo",
@@ -5269,7 +5532,7 @@
                 "hd"
               ]
             },
-            "description": "Image quality level. Only supported by `gptimage` and `gptimage-large`."
+            "description": "Image quality level. Only supported by `gptimage`, `gptimage-large`, and `gpt-image-2`."
           },
           {
             "in": "query",
@@ -5286,7 +5549,7 @@
               "default": false,
               "type": "boolean"
             },
-            "description": "Generate image with transparent background. Only supported by `gptimage` and `gptimage-large`."
+            "description": "Generate image with transparent background. Only supported by `gptimage`, `gptimage-large`, and `gpt-image-2`."
           },
           {
             "in": "query",
@@ -5839,6 +6102,17 @@
               "type": "string"
             },
             "description": "Style/genre tags for music generation (acestep only)"
+          },
+          {
+            "in": "query",
+            "name": "seed",
+            "schema": {
+              "example": "42",
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 4294967295
+            },
+            "description": "Seed for deterministic output (0-4294967295). Same seed + params = best-effort return of the same cached result. Omit for random."
           },
           {
             "in": "query",
